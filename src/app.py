@@ -6,8 +6,8 @@ Simple slack bot app.
 # Standard imports
 import os
 
-# Third party imports
-import slack
+# Third party importst
+import slack            # type: ignore
 from dotenv import load_dotenv
 
 # Load .env
@@ -24,7 +24,9 @@ def send_message(web_client: slack.WebClient, channel_id: str, user_id: str) -> 
         "text": "Hello World!",
         }
     response = web_client.chat_postMessage(**message_to_be_sent)
-    return response
+    if response:
+        return True
+    return None
 
 
 @slack.RTMClient.run_on(event="message")
@@ -40,7 +42,8 @@ def message(**payload: dict) -> None:
     text = data.get("text")
 
     if text and text.lower() == "start":
-        send_message(web_client, channel_id, user_id)
+        return send_message(web_client, channel_id, user_id)
+    return False
 
 
 if __name__ == "__main__":

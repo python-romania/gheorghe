@@ -3,9 +3,9 @@ test_app.py
 
 Test file
 """
-def test_hello() -> None:
+
+def test_send_message() -> None:
     """
-    Hello World test
+    Testing send message
     """
-    expected = "Hello World"
-    assert "Hello World" in expected
+    assert True
