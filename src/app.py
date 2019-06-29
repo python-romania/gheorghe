@@ -5,6 +5,7 @@ Simple slack bot app.
 """
 # Standard imports
 import os
+from typing import Optional
 
 # Third party importst
 import slack            # type: ignore
@@ -14,23 +15,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def send_message(web_client: slack.WebClient, channel_id: str, user_id: str) -> None:
+def send_message(web_client: slack.WebClient, channel_id: str, user_id: Optional[str], text_message: Optional[str]) -> dict:
     """
     Send a hello world message
     """
     message_to_be_sent = {
         "channel": channel_id,
         "user": user_id,
-        "text": "Hello World!",
+        "text": text_message,
         }
     response = web_client.chat_postMessage(**message_to_be_sent)
-    if response:
-        return True
-    return None
+    return response
+
 
 
 @slack.RTMClient.run_on(event="message")
-def message(**payload: dict) -> None:
+def message(**payload: dict):
     """
     It listens for a message event coming from
     slack and it sends a message back.
@@ -40,11 +40,12 @@ def message(**payload: dict) -> None:
     channel_id = data.get("channel")
     user_id = data.get("user")
     text = data.get("text")
+    text_message = "Hello World"
 
     if text and text.lower() == "start":
-        return send_message(web_client, channel_id, user_id)
-    return False
-
+        send_message(web_client, channel_id, user_id, text_message)
+        return data
+    return None
 
 if __name__ == "__main__":
     print("Program starts..")
