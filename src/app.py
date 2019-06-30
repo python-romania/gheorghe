@@ -10,7 +10,6 @@ import slack  # type: ignore
 # Local modules
 from . import callback
 
-
 @slack.RTMClient.run_on(event="team_join")
 def onboarding_event(**payload) -> dict:
     """
@@ -35,7 +34,10 @@ def onboarding_event(**payload) -> dict:
     channel = response["channel"]["id"]
 
     # Build the message
-    return callback.start_onboarding(web_client, new_user_id, channel)
+    if response:
+        callback.start_onboarding(web_client, new_user_id, channel)
+        return response
+    return None
 
 @slack.RTMClient.run_on(event="message")
 def message(**payload: dict) -> dict:

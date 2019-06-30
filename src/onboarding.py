@@ -7,8 +7,8 @@ import pathlib
 
 HERE = pathlib.Path(__file__).parent
 
-ABOUT_GROUP = (HERE / "data/about.md").read_text()
-INTRODUCE = (HERE / "data/introduce.md").read_text()
+ABOUT_GROUP = (HERE / "data/about.txt").read_text()
+INTRODUCE = (HERE / "data/introduce.txt").read_text()
 
 
 class OnboardingMessage:
@@ -48,7 +48,6 @@ class OnboardingMessage:
                 self._introduce_yourself_block(),
                 self.DIVIDER_BLOCK,
                 self.WELCOME_BLOCK,
-                self.DIVIDER_BLOCK,
                 ]
             }
 
@@ -56,16 +55,11 @@ class OnboardingMessage:
         """
         Returns introduce yourself block
         """
-        text = (
-            f"*Hello {self.user_id}*\n",
-            INTRODUCE
-        )
-
         return {
             "type": "section",
             "text":{
                 "type": "mrkdwn",
-                "text": text,
+                "text": INTRODUCE,
             }
         }
 

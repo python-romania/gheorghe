@@ -97,14 +97,11 @@ def team_join_event_fixture():
     Returns:
         None
     """
-    response = {
-        "data": {
-            "user": {
-                "id": "UFY99RRNU"
-            },
-            "text": "text meu"
-        },
-        "web_client": "",
-    }
-    yield response
-    del response
+    payload = {}
+    payload["data"] = {}
+    payload["data"]["user"] = {}
+    payload["data"]["user"]["id"] = "UFY99RRNU"
+    payload["web_client"] = ""
+
+    yield payload
+    del payload

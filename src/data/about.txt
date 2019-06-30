@@ -1,4 +1,5 @@
-****Ce este acest grup?*
+
+*Ce este acest grup?*
 
 Acest grup se vrea a fi un grup de studiu, un loc in care poti gasi oameni pasionati de Python,
 pregatiti sa te ajute sa inveti o librarie noua sau sa descoperi mai multe despre Python.
