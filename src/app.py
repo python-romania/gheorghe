@@ -3,37 +3,53 @@ app.py
 
 Simple slack bot app.
 """
-# Standard imports
-import os
-from typing import Optional
 
-# Third party importst
-import slack            # type: ignore
-from dotenv import load_dotenv
+# Third-party library
+import slack  # type: ignore
 
-# Load .env
-load_dotenv()
+# Local modules
+from . import callback
 
-
-def send_message(web_client: slack.WebClient, channel_id: str, user_id: Optional[str], text_message: Optional[str]) -> dict:
+@slack.RTMClient.run_on(event="team_join")
+def onboarding_event(**payload) -> dict:
     """
-    Send a hello world message
+    When a new user joins the team, "start_onboarding"
+    callback method is triggered.
+
+    Attributes:
+        payload (dict): payload responde from slack api
+
+    Returns:
+        Response if the message was sent OK
+
     """
-    message_to_be_sent = {
-        "channel": channel_id,
-        "user": user_id,
-        "text": text_message,
-        }
-    response = web_client.chat_postMessage(**message_to_be_sent)
-    return response
+    # Get the web_client
+    web_client = payload["web_client"]
 
+    # Get the id of new user
+    new_user_id = payload["data"]["user"]["id"]
 
+    # Open a direct message with the new user
+    response = web_client.im_open(user=new_user_id)
+    channel = response["channel"]["id"]
+
+    # Build the message
+    if response:
+        callback.start_onboarding(web_client, new_user_id, channel)
+        return response
+    return None
 
 @slack.RTMClient.run_on(event="message")
-def message(**payload: dict):
+def message(**payload: dict) -> dict:
     """
-    It listens for a message event coming from
+    It listens for a 'message' event coming from
     slack and it sends a message back.
+
+    Attributes:
+        payload (dict): dict payload received from api
+
+    Returns:
+        A response if the message was sent succesfully
     """
     data = payload["data"]
     web_client = payload["web_client"]
@@ -43,12 +59,5 @@ def message(**payload: dict):
     text_message = "Hello World"
 
     if text and text.lower() == "start":
-        send_message(web_client, channel_id, user_id, text_message)
-        return data
+        return callback.send_message(web_client, channel_id, user_id, text_message)
     return None
-
-if __name__ == "__main__":
-    print("Program starts..")
-    TOKEN = os.getenv("SLACK_BOT_TOKEN")
-    RTM_CLIENT = slack.RTMClient(token=TOKEN)
-    RTM_CLIENT.start()
