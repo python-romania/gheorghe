@@ -1,92 +1,116 @@
 """
 test_app.py
 """
+# pylint: disable=too-few-public-methods
+
+# Standard library
 from importlib import reload
 from unittest.mock import patch
 
+# Third-party library
 import slack
+import pytest
 
+# Local modules
 from src import app
-# Sample data payload
-#
-# data = {'channel': 'GKZ71F9DW',
-#          'client_msg_id': 'cfcf307d-f78e-47ad-...c8bcb0fe4',
-#          'event_ts': '1561815400.004000',
-#          'source_team': 'TG03E73T9',
-#          'suppress_notification': False,
-#          'team': 'TG03E73T9',
-#          'text': 'start',
-#          'ts': '1561815400.004000',
-#          'user': 'UFY99RRNU',
-#          'user_team': 'TG03E73T9'}
-
-# Sample response for slack.web_client.chat_postMessage
-# response = {
-#     "ok": true,
-#     "channel": "C1H9RESGL",
-#     "ts": "1503435956.000247",
-#     "message": {
-#         "text": "Here's a message for you",
-#         "username": "ecto1",
-#         "bot_id": "B19LU7CSY",
-#         "attachments": [
-#             {
-#                 "text": "This is an attachment",
-#                 "id": 1,
-#                 "fallback": "This is an attachment's fallback"
-#             }
-#         ],
-#         "type": "message",
-#         "subtype": "bot_message",
-#         "ts": "1503435956.000247"
-#     }
-# }
 
 
-def test_none_message(web_client_fixture: slack.WebClient) -> None:
+class TestApp:
     """
-    Testing if not "start" message
+    Testing app events
     """
-    payload = {
-        "data": {
-            "channel": "GKZ71F9DW",
-            "user": "UFY99RRNU",
-            "text":"other"},
-        "web_client": web_client_fixture,
-        }
-    with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
+
+    @staticmethod
+    def test_message_event(
+            web_client_fixture: slack.WebClient,
+            response_fixture: dict,
+            payload_fixture: dict) -> None:
+        """
+        Tests if a message is sent and an "OK" response is received.
+
+        Attributes:
+            web_client_fixture(slack.WebClient): slack api web client
+
+        Returns:
+            None
+        """
+        payload_fixture["web_client"] = web_client_fixture
+
+        with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
+            reload(app)
+            response = app.message(**payload_fixture)
+            assert response["ok"]
+            assert response["channel"] == response_fixture["channel"]
+
         reload(app)
-        data = app.message(**payload)
-        assert data is None
+
+    @staticmethod
+    def test_message_event_none(
+            web_client_fixture: slack.WebClient,
+            payload_fixture: dict) -> None:
+        """
+        Test if if None is returned. That means the message will
+        not be "start".
+
+        Attributes:
+            web_client (slack.WebClient)
+
+        Returns:
+            Nothing
+        """
+        payload_fixture["web_client"] = web_client_fixture
+        payload_fixture["data"]["text"] = "other"
+
+        with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
+            reload(app)
+            response = app.message(**payload_fixture)
+            assert response is None
 
 
-def test_data_payload(web_client_fixture: slack.WebClient) -> None:
+@pytest.mark.skip()
+class TestCallback:
     """
-    Testing data payload
+    Testing app's function callbacks
     """
-    payload = {
-        "data": {
-            "channel": "GKZ71F9DW",
-            "user": "UFY99RRNU",
-            "text":"start"},
-        "web_client": web_client_fixture,
-        }
-    with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
-        reload(app)     # reload app module
-        expected_data = payload["data"]
-        data = app.message(**payload)
-        assert data.get("user") == expected_data.get("user")
-        assert data.get("channel") == expected_data.get("channel")
-        assert data.get("text") == expected_data.get("text")
-    reload(app) # reload app module
+    @staticmethod
+    def test_none_message(web_client_fixture: slack.WebClient) -> None:
+        """
+        Testing if not "start" message
+        """
+        payload = {
+            "data": {
+                "channel": "GKZ71F9DW",
+                "user": "UFY99RRNU",
+                "text":"other"},
+            "web_client": web_client_fixture,
+            }
+        with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
+            reload(app)
+            data = app.message(**payload)
+            assert data is None
+
+    @staticmethod
+    def test_send_messages(web_client_fixture: slack.WebClient) -> None:
+        """
+        Testing send message
+        """
+        channel = "GKZ71F9DW"
+        user = "UFY99RRNU"
+        message = "This is a simple test message"
+        response = app.send_message(web_client_fixture, channel, user, message)
+        assert response["ok"]
+
+class TestMessage:
+    """
+    Testing UI message blocks
+    """
+
+class TestOnboarding:
+    """
+    Testing UI onboarding blocks
+    """
 
 
-def test_send_message(web_client_fixture: slack.WebClient) -> None:
-    """
-    Testing send message
-    """
-    channel = "GKZ71F9DW"
-    user = "UFY99RRNU"
-    message = "This is a simple test message"
-    response = app.send_message(web_client_fixture, channel, user, message)
-    assert response["ok"]
+
+
+
