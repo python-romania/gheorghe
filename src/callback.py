@@ -9,6 +9,41 @@ import slack
 
 # Local modules
 from .message import Message
+from .onboarding import OnboardingMessage
+
+# In memory storage
+ONBOARDING_MESSAGE_LOG = {}
+
+def start_onboarding(web_client: slack.WebClient, new_user_id: str, channel: str) -> dict:
+    """
+    Send a direct message to the new user with the
+    welcome message.
+
+    Attributes:
+        web_client (slack.WebClient): slack api web client
+        user_id (str): user if of the new user
+        channel (str): the channel/direct message
+
+    Returns:
+        a dict with response from slack
+    """
+    # Build the message
+    onboarding_message = OnboardingMessage(channel=channel, new_user_id=new_user_id)
+
+    # Get the message
+    message_to_be_sent = onboarding_message.get_message_payload()
+
+    # Send the message to user
+    response = web_client.chat_postMessage(**message_to_be_sent)
+
+    # Get the timestamp
+    onboarding_message.timestamp = response["ts"]
+
+    # Log the message sent
+    if channel not in ONBOARDING_MESSAGE_LOG:
+        ONBOARDING_MESSAGE_LOG["channel"] = {}
+    ONBOARDING_MESSAGE_LOG["channel"]["user_id"] = onboarding_message
+
 
 def send_message(web_client: slack.WebClient, channel_id: str, user_id: Optional[str], text_message: Optional[str]) -> dict:
     """

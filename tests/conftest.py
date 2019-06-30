@@ -84,3 +84,26 @@ def response_fixture():
     }
     yield response
     del response
+
+
+@pytest.fixture(scope="session")
+def team_join_event_fixture():
+    """
+    Setup for team_join event.
+
+    Yield:
+        response (dict): response sample
+
+    Returns:
+        None
+    """
+    response = {
+        "data": {
+            "user": {
+                "id": "UFY99RRNU"
+            }
+        },
+        "web_client": "",
+    }
+    yield response
+    del response

@@ -6,11 +6,10 @@ test_app.py
 # Standard library
 from importlib import reload
 from unittest.mock import patch
-from unittest.mock import MagicMock
 
 # Third-party library
-import slack
 import pytest
+import slack
 
 # Local modules
 from src import app
@@ -20,6 +19,40 @@ class TestApp:
     """
     Testing app events
     """
+
+    @staticmethod
+    @patch("os.getenv", spec=True)
+    def test_init(fake_os):
+        """
+        Test init method
+        """
+        fake_os.return_value = "secret_token"
+
+    @staticmethod
+    def test_team_join_event(
+            web_client_fixture: slack.WebClient,
+            team_join_event_fixture: dict) -> None:
+        """
+        Tests if a "team_join" event has been triggered.
+
+        Attributes:
+            web_client_fixture (slack.WebClient): slack api web client
+            team_join_event_fixture (dict): event response/payload
+
+        Returns:
+            None
+        """
+        team_join_event_fixture["web_client"] = web_client_fixture
+
+        with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
+
+            # Import again app module with the patched decorator
+            reload(app)
+
+            response = app.onboarding_event(**team_join_event_fixture)
+            print(response)
+
+
 
     @staticmethod
     @patch("slack.WebClient", spec=True)
@@ -40,7 +73,7 @@ class TestApp:
 
         with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
 
-            # Import again app module with the and apply the patched decorator
+            # Import again app module with the patched decorator
             reload(app)
 
             response = app.message(**payload_fixture)

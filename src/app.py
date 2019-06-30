@@ -3,19 +3,39 @@ app.py
 
 Simple slack bot app.
 """
-# Standard imports
-import os
 
 # Third-party library
 import slack  # type: ignore
-from dotenv import load_dotenv
 
 # Local modules
 from . import callback
 
-# Load .env
-load_dotenv()
 
+@slack.RTMClient.run_on(event="team_join")
+def onboarding_event(**payload) -> dict:
+    """
+    When a new user joins the team, "start_onboarding"
+    callback method is triggered.
+
+    Attributes:
+        payload (dict): payload responde from slack api
+
+    Returns:
+        Response if the message was sent OK
+
+    """
+    # Get the web_client
+    web_client = payload["web_client"]
+
+    # Get the id of new user
+    new_user_id = payload["data"]["user"]["id"]
+
+    # Open a direct message with the new user
+    response = web_client.im_open(new_user_id)
+    channel = response["channel"]["id"]
+
+    # Build the message
+    return callback.start_onboarding(web_client, new_user_id, channel)
 
 @slack.RTMClient.run_on(event="message")
 def message(**payload: dict) -> dict:
@@ -39,10 +59,3 @@ def message(**payload: dict) -> dict:
     if text and text.lower() == "start":
         return callback.send_message(web_client, channel_id, user_id, text_message)
     return None
-
-
-if __name__ == "__main__":
-    print("Program starts..")
-    TOKEN = os.getenv("SLACK_BOT_TOKEN")
-    RTM_CLIENT = slack.RTMClient(token=TOKEN)
-    RTM_CLIENT.start()
