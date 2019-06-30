@@ -31,7 +31,7 @@ def onboarding_event(**payload) -> dict:
     new_user_id = payload["data"]["user"]["id"]
 
     # Open a direct message with the new user
-    response = web_client.im_open(new_user_id)
+    response = web_client.im_open(user=new_user_id)
     channel = response["channel"]["id"]
 
     # Build the message

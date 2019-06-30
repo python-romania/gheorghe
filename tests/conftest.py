@@ -25,7 +25,7 @@ def web_client_fixture() -> slack.WebClient:
     yield web_client
     del web_client
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def payload_fixture():
     """
     Setup payload example
@@ -86,7 +86,7 @@ def response_fixture():
     del response
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def team_join_event_fixture():
     """
     Setup for team_join event.
@@ -101,7 +101,8 @@ def team_join_event_fixture():
         "data": {
             "user": {
                 "id": "UFY99RRNU"
-            }
+            },
+            "text": "text meu"
         },
         "web_client": "",
     }

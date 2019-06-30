@@ -29,7 +29,9 @@ class TestApp:
         fake_os.return_value = "secret_token"
 
     @staticmethod
+    @patch("slack.WebClient", spec=True)
     def test_team_join_event(
+            fake_web_client,
             web_client_fixture: slack.WebClient,
             team_join_event_fixture: dict) -> None:
         """
@@ -42,6 +44,7 @@ class TestApp:
         Returns:
             None
         """
+        fake_web_client.im_open.return_value = team_join_event_fixture
         team_join_event_fixture["web_client"] = web_client_fixture
 
         with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
@@ -49,8 +52,11 @@ class TestApp:
             # Import again app module with the patched decorator
             reload(app)
 
+            # print(payload_test)
             response = app.onboarding_event(**team_join_event_fixture)
             print(response)
+
+        reload(app)
 
 
 
