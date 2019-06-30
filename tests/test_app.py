@@ -6,6 +6,7 @@ test_app.py
 # Standard library
 from importlib import reload
 from unittest.mock import patch
+from unittest.mock import MagicMock
 
 # Third-party library
 import slack
@@ -21,33 +22,37 @@ class TestApp:
     """
 
     @staticmethod
-    def test_message_event(
-            web_client_fixture: slack.WebClient,
-            response_fixture: dict,
-            payload_fixture: dict) -> None:
+    @patch("slack.WebClient", spec=True)
+    def test_message_event(fake_web_client, response_fixture: dict, payload_fixture: dict,) -> None:
         """
         Tests if a message is sent and an "OK" response is received.
 
         Attributes:
-            web_client_fixture(slack.WebClient): slack api web client
+            response_fixture (dict): response of web_client
+            payload_fixture (dict): payload received from rtm_client
 
         Returns:
             None
         """
-        payload_fixture["web_client"] = web_client_fixture
+
+        fake_web_client.chat_postMessage.return_value = response_fixture
+        payload_fixture["web_client"] = fake_web_client
 
         with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
+
+            # Import again app module with the and apply the patched decorator
             reload(app)
+
             response = app.message(**payload_fixture)
             assert response["ok"]
             assert response["channel"] == response_fixture["channel"]
 
+        # Import again app module without applying the patched decorator
         reload(app)
 
     @staticmethod
-    def test_message_event_none(
-            web_client_fixture: slack.WebClient,
-            payload_fixture: dict) -> None:
+    @patch("slack.WebClient", spec=True)
+    def test_message_event_none(fake_web_client, payload_fixture: dict) -> None:
         """
         Test if if None is returned. That means the message will
         not be "start".
@@ -58,7 +63,7 @@ class TestApp:
         Returns:
             Nothing
         """
-        payload_fixture["web_client"] = web_client_fixture
+        payload_fixture["web_client"] = fake_web_client
         payload_fixture["data"]["text"] = "other"
 
         with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
@@ -72,33 +77,6 @@ class TestCallback:
     """
     Testing app's function callbacks
     """
-    @staticmethod
-    def test_none_message(web_client_fixture: slack.WebClient) -> None:
-        """
-        Testing if not "start" message
-        """
-        payload = {
-            "data": {
-                "channel": "GKZ71F9DW",
-                "user": "UFY99RRNU",
-                "text":"other"},
-            "web_client": web_client_fixture,
-            }
-        with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
-            reload(app)
-            data = app.message(**payload)
-            assert data is None
-
-    @staticmethod
-    def test_send_messages(web_client_fixture: slack.WebClient) -> None:
-        """
-        Testing send message
-        """
-        channel = "GKZ71F9DW"
-        user = "UFY99RRNU"
-        message = "This is a simple test message"
-        response = app.send_message(web_client_fixture, channel, user, message)
-        assert response["ok"]
 
 class TestMessage:
     """
