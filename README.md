@@ -1,4 +1,4 @@
-# Project - Gheorghe
+# Project - Gheorghe 🤖
 
 **A slack bot with a mission.** 
 
