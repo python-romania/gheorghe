@@ -2,8 +2,8 @@
 conftest.py
 """
 import os
-import pytest
-import slack
+import pytest  # type: ignore imports
+import slack   # type: ignore imports
 from dotenv import load_dotenv
 
 # load environment variables
@@ -42,66 +42,7 @@ def payload_fixture():
             "channel": "GKZ71F9DW",
             "user": "UFY99RRNU",
             "text":"start",
-            'client_msg_id': 'cfcf307d-f78e-47ad-...c8bcb0fe4',
-            'event_ts': '1561815400.004000',
-            'source_team': 'TG03E73T9',
-            'suppress_notification': False,
-            'team': 'TG03E73T9',
-            'ts': '1561815400.004000',
-            'user_team': 'TG03E73T9',
         },
         "web_client": "",
     }
     yield payload
-    del payload
-
-@pytest.fixture(scope="function")
-def response_fixture():
-    """
-    Setup response example
-
-    Yield:
-        response (dict): response sample
-
-    Returns:
-        None
-    """
-    response = {
-        "ok": True,
-        "channel":  "GKZ71F9DW",
-        "username": "ecto1",
-        "bot_id": "B19LU7CSY",
-        "attachments": [
-            {
-                "text": "This is an attachment",
-                "id": 1,
-                "fallback": "This is an attachment's fallback"
-            }
-        ],
-        "type": "message",
-        "subtype": "bot_message",
-        "ts": "1503435956.000247"
-    }
-    yield response
-    del response
-
-
-@pytest.fixture(scope="function")
-def team_join_event_fixture():
-    """
-    Setup for team_join event.
-
-    Yield:
-        response (dict): response sample
-
-    Returns:
-        None
-    """
-    payload = {}
-    payload["data"] = {}
-    payload["data"]["user"] = {}
-    payload["data"]["user"]["id"] = "UFY99RRNU"
-    payload["web_client"] = ""
-
-    yield payload
-    del payload

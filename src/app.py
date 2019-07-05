@@ -3,6 +3,8 @@ app.py
 
 Simple slack bot app.
 """
+# Standard library import
+from typing import Union
 
 # Third-party library
 import slack  # type: ignore
@@ -11,7 +13,7 @@ import slack  # type: ignore
 from . import callback
 
 @slack.RTMClient.run_on(event="team_join")
-def onboarding_event(**payload) -> dict:
+def onboarding_event(**payload) -> None:
     """
     When a new user joins the team, "start_onboarding"
     callback method is triggered.
@@ -40,7 +42,7 @@ def onboarding_event(**payload) -> dict:
     return None
 
 @slack.RTMClient.run_on(event="message")
-def message(**payload: dict) -> dict:
+def message(**payload: dict) -> Union[dict, None]:
     """
     It listens for a 'message' event coming from
     slack and it sends a message back.
