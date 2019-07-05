@@ -6,10 +6,10 @@ test_app.py
 # Standard library
 from importlib import reload
 from unittest.mock import patch
+from unittest.mock import MagicMock
 
 # Third-party library
-import pytest
-import slack
+import pytest # type: ignore imports
 
 # Local modules
 from src import app
@@ -21,67 +21,55 @@ class TestApp:
     """
 
     @staticmethod
-    @patch("os.getenv", spec=True)
-    def test_init(fake_os):
-        """
-        Test init method
-        """
-        fake_os.return_value = "secret_token"
-
-    @staticmethod
-    def test_team_join_event(
-            web_client_fixture: slack.WebClient,
-            team_join_event_fixture: dict) -> None:
+    @patch("slack.WebClient", spec=True)
+    def test_team_join_event(fake_web_client: MagicMock, payload_fixture: dict) -> None:
         """
         Tests if a "team_join" event has been triggered.
 
         Attributes:
-            web_client_fixture (slack.WebClient): slack api web client
-            team_join_event_fixture (dict): event response/payload
+            fake_web_client (MagicMock): fake slack api web client
+            payload_fixture (dict): fake payload
 
         Returns:
             None
         """
-        team_join_event_fixture["web_client"] = web_client_fixture
+        payload_fixture["web_client"] = fake_web_client
+        payload_fixture["data"] = {"user": {"id": "UFY99RRNU"}}
 
         with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
-
             # Import again app module with the patched decorator
             reload(app)
-
-            response = app.onboarding_event(**team_join_event_fixture)
+            response = app.onboarding_event(**payload_fixture)
             assert response["ok"]
 
         reload(app)
 
 
-
     @staticmethod
     @patch("slack.WebClient", spec=True)
-    def test_message_event(fake_web_client, response_fixture: dict, payload_fixture: dict,) -> None:
+    def test_message_event(fake_web_client: MagicMock, payload_fixture: dict) -> None:
         """
         Tests if a message is sent and an "OK" response is received.
 
         Attributes:
-            response_fixture (dict): response of web_client
+            fake_web_client (MagicMock): fake slack web client
             payload_fixture (dict): payload received from rtm_client
 
         Returns:
             None
         """
-
-        fake_web_client.chat_postMessage.return_value = response_fixture
         payload_fixture["web_client"] = fake_web_client
+        payload_fixture["data"] = {"chnnel": "GKZ71F9DW", "user": "UFY99RRNU", "text":"start", }
+
+        fake_response = {"ok": True, "channel": "GKZ71F9DW"}
+        fake_web_client.chat_postMessage.return_value = fake_response
 
         with patch("slack.RTMClient.run_on", lambda *arg, **kwarg: lambda f: f):
-
-            # Import again app module with the patched decorator
+            # Import again app module with the patced decorator
             reload(app)
-
             response = app.message(**payload_fixture)
             assert response["ok"]
-            assert response["channel"] == response_fixture["channel"]
-
+            assert response["channel"] == fake_response["channel"]
         # Import again app module without applying the patched decorator
         reload(app)
 
@@ -93,7 +81,7 @@ class TestApp:
         not be "start".
 
         Attributes:
-            web_client (slack.WebClient)
+            fake_web_client (MagicMock): fake slack web client
 
         Returns:
             Nothing

@@ -5,16 +5,16 @@ callback.py
 from typing import Optional
 
 # Third-party library
-import slack
+import slack # type: ignore imports
 
 # Local modules
 from .message import Message
 from .onboarding import OnboardingMessage
 
 # In memory storage
-ONBOARDING_MESSAGE_LOG = {}
+ONBOARDING_MESSAGE_LOG: dict = {}
 
-def start_onboarding(web_client: slack.WebClient, new_user_id: str, channel: str) -> dict:
+def start_onboarding(web_client: slack.WebClient, new_user_id: str, channel: str) -> None:
     """
     Send a direct message to the new user with the
     welcome message.
@@ -43,6 +43,7 @@ def start_onboarding(web_client: slack.WebClient, new_user_id: str, channel: str
     if channel not in ONBOARDING_MESSAGE_LOG:
         ONBOARDING_MESSAGE_LOG["channel"] = {}
     ONBOARDING_MESSAGE_LOG["channel"]["user_id"] = onboarding_message
+
 
 
 def send_message(web_client: slack.WebClient, channel_id: str, user_id: Optional[str], text_message: Optional[str]) -> dict:
