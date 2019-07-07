@@ -8,3 +8,5 @@ install:
 # command to run tests
 script:
   - pytest
+notifications:
+  slack: pythonromania:Eqb3iA9ws9lybCrHDu5xJrrn
