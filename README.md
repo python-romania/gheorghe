@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/python-romania/gheorghe.svg?branch=master)](https://travis-ci.com/python-romania/gheorghe)
+
+
 # Project - Gheorghe 🤖
 
 **A slack bot with a mission.** 
